@@ -12,6 +12,7 @@ from sheets import GoogleSheetsManager
 from stocks import StockAnalyzer
 from ai_insights import AIInsightsManager
 from alerts import AlertManager
+import threading
 
 # Configure logging with UTF-8 encoding
 logging.basicConfig(
@@ -385,7 +386,32 @@ class StockWatchlistBot:
 def main():
     """Main entry point"""
     try:
-        # Create the bot
+        # Add Flask web server for Render Web Service
+        from flask import Flask
+        import threading
+        import os
+        
+        # Create Flask app
+        app = Flask(__name__)
+        
+        @app.route('/')
+        def health_check():
+            return "Stock Bot is running!"
+        
+        @app.route('/health')
+        def health():
+            return "OK"
+        
+        def run_web_server():
+            port = int(os.environ.get('PORT', 10000))
+            app.run(host='0.0.0.0', port=port, debug=False)
+        
+        # Start web server in background thread
+        web_thread = threading.Thread(target=run_web_server, daemon=True)
+        web_thread.start()
+        logger.info(f"Web server started on port {os.environ.get('PORT', 10000)}")
+        
+        # Create and run the bot (your existing code)
         bot = StockWatchlistBot()
         
         # For local development, run with simpler event loop
@@ -400,6 +426,5 @@ def main():
     except Exception as e:
         logger.error(f"Failed to start application: {e}")
         sys.exit(1)
-
 if __name__ == "__main__":
     main()
