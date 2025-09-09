@@ -4,6 +4,7 @@ import sys
 import signal
 import os
 from datetime import datetime
+# from telegram_bot import TelegramBot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 import config
@@ -384,21 +385,25 @@ class StockWatchlistBot:
             logger.error(f"Error in bot polling: {e}")
 
 def main():
-    """Main entry point"""
+    """Simplified main function without complex async loops"""
     try:
-        # Create and run the bot (no Flask needed)
-        bot = StockWatchlistBot()
+        logger.info("Starting Stock Watchlist Bot on Railway...")
         
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        # Import here to avoid early initialization issues
         
-        try:
-            loop.run_until_complete(bot.run())
-        finally:
-            loop.close()
-            
+        
+        # Create and start bot directly
+        bot = TelegramBot()
+        
+        logger.info("Starting Telegram bot polling...")
+        
+        # This runs the bot in blocking mode
+        bot.start_polling()
+        
+    except KeyboardInterrupt:
+        logger.info("Bot stopped by user")
     except Exception as e:
-        logger.error(f"Failed to start application: {e}")
+        logger.error(f"Fatal error: {e}")
         sys.exit(1)
 if __name__ == "__main__":
     main()
